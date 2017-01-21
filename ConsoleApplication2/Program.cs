@@ -100,6 +100,13 @@ namespace OpenTKTutorial6
             tc2.TextureID = textures["opentksquare2.png"];
             objects.Add(tc2);
             cam.Position += new Vector3(0f, 0f, 3f);
+
+            Volume obj = ObjVolume.LoadFromFile("cow.obj");
+            obj.TextureID = textures["opentksquare.png"];
+            objects.Add(obj);
+            Volume obj2 = ObjVolume.LoadFromFile("teapot.obj");
+            obj2.Position += new Vector3(0f, 2f, 0f);
+            objects.Add(obj2);
         }
 
         int loadImage(Bitmap image)
@@ -210,8 +217,6 @@ namespace OpenTKTutorial6
                 v.CalculateModelMatrix();
                 v.ViewProjectionMatrix = cam.GetViewMatrix() * Matrix4.CreatePerspectiveFieldOfView(1.3f,
                     ClientSize.Width / (float)ClientSize.Height, 1.0f, 40.0f);
-                //v.ViewProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(1.3f,
-                //    ClientSize.Width / (float)ClientSize.Height, 1.0f, 40.0f);
                 v.ModelViewProjectionMatrix = v.ModelMatrix * v.ViewProjectionMatrix;
             }
             GL.UseProgram(shaders[activeShader].ProgramID);
@@ -228,17 +233,32 @@ namespace OpenTKTutorial6
             shaders[activeShader].EnableVertexAttribArrays();
 
             int indiceat = 0;
+
             foreach (Volume v in objects)
             {
-                GL.BindTexture(TextureTarget.Texture2D, v.TextureID);
-                GL.UniformMatrix4(shaders[activeShader].GetUniform("modelview"), false, 
+                GL.UniformMatrix4(shaders[activeShader].GetUniform("modelview"), false,
                     ref v.ModelViewProjectionMatrix);
-                if (shaders[activeShader].GetAttribute("maintexture") != -1)
-                    GL.Uniform1(shaders[activeShader].GetAttribute("maintexture"), v.TextureID);
+                if (shaders[activeShader].GetUniform("maintexture") != -1)
+                    GL.Uniform1(shaders[activeShader].GetUniform("maintexture"), 1);
+                GL.ActiveTexture(TextureUnit.Texture1);
+                GL.BindTexture(TextureTarget.Texture2D, v.TextureID);
                 GL.DrawElements(BeginMode.Triangles, v.IndiceCount, DrawElementsType.UnsignedInt,
-                    indiceat * sizeof(uint));
+                indiceat * sizeof(uint));
                 indiceat += v.IndiceCount;
             }
+            //foreach (Volume v in objects)
+            //{
+            //    GL.BindTexture(TextureTarget.Texture2D, v.TextureID);
+            //    GL.UniformMatrix4(shaders[activeShader].GetUniform("modelview"), false, ref v.ModelViewProjectionMatrix);
+
+            //    if (shaders[activeShader].GetAttribute("maintexture") != -1)
+            //    {
+            //        GL.Uniform1(shaders[activeShader].GetAttribute("maintexture"), v.TextureID);
+            //    }
+
+            //    GL.DrawElements(BeginMode.Triangles, v.IndiceCount, DrawElementsType.UnsignedInt, indiceat * sizeof(uint));
+            //    indiceat += v.IndiceCount;
+            //}
 
             GL.Flush();
 
